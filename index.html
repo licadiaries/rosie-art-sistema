@@ -2,114 +2,268 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Rosie Art | Login</title>
+<title>Feedback | Rosie Art</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
 margin:0;
 font-family:Arial;
-display:flex;
-height:100vh;
+background:linear-gradient(135deg,#fff0f5,#ffe4ec);
 }
 
-.left{
-flex:1;
-background:url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") center/cover;
-}
-
-.right{
-flex:1;
-display:flex;
-justify-content:center;
-align-items:center;
-background:#f4f6f8;
-}
-
-.box{
-width:340px;
+/* BOTÃO SAIR FIXO */
+.logout{
+position:fixed;
+top:15px;
+right:15px;
 background:white;
-padding:30px;
-border-radius:15px;
-box-shadow:0 10px 30px rgba(0,0,0,0.15);
+color:#ff69b4;
+border:none;
+padding:6px 10px;
+border-radius:8px;
+font-size:12px;
+cursor:pointer;
+box-shadow:0 2px 8px rgba(0,0,0,0.15);
+transition:0.2s;
+z-index:1000;
 }
 
-input{
+.logout:hover{
+transform:scale(1.05);
+}
+
+/* IMAGEM CORPORATIVA */
+.banner{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:0 0 20px 20px;
+}
+
+/* HEADER */
+header{
+background:linear-gradient(90deg,#ff69b4,#ff85c1);
+color:white;
+padding:18px 25px;
+text-align:center;
+position:relative;
+}
+
+/* USUÁRIO */
+.user{
+position:absolute;
+left:15px;
+top:15px;
+font-size:14px;
+opacity:0.95;
+}
+
+/* LAYOUT */
+.container{
+width:90%;
+max-width:900px;
+margin:25px auto;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+/* CARD */
+.card{
+background:white;
+padding:20px;
+border-radius:18px;
+box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* FORM */
+input,textarea{
 width:100%;
 padding:12px;
-margin:8px 0;
-border-radius:8px;
-border:1px solid #ccc;
+margin-top:10px;
+border-radius:10px;
+border:1px solid #eee;
+outline:none;
+font-size:14px;
 }
 
-button{
+textarea{
+resize:none;
+height:80px;
+}
+
+/* BOTÃO */
+button.action{
+margin-top:12px;
 width:100%;
 padding:12px;
 border:none;
-border-radius:8px;
-cursor:pointer;
-margin-top:8px;
-}
-
-.login{
-background:#111;
+border-radius:10px;
+background:linear-gradient(90deg,#ff69b4,#ff85c1);
 color:white;
+cursor:pointer;
+font-weight:bold;
 }
 
-.cad{
-background:white;
-border:1px solid #111;
-color:#111;
+/* FEEDBACK */
+.feed{
+background:#fff0f5;
+padding:12px;
+border-radius:12px;
+margin-top:10px;
+font-size:14px;
+}
+
+/* GRAFICO */
+#graficoContainer{
+grid-column:span 2;
+}
+
+@media(max-width:768px){
+.container{
+grid-template-columns:1fr;
+}
+#graficoContainer{
+grid-column:1;
+}
 }
 </style>
 </head>
 
 <body>
 
-<div class="left"></div>
+<!-- BOTÃO SAIR -->
+<button class="logout" onclick="logout()">Sair</button>
 
-<div class="right">
-<div class="box">
+<!-- IMAGEM CORPORATIVA -->
+<img class="banner" src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80">
 
-<h2>Rosie Art</h2>
+<header>
+<div class="user" id="user"></div>
+<h2>Rosie Art Feedback</h2>
+</header>
 
-<input id="email" placeholder="Email">
-<input id="senha" type="password" placeholder="Senha">
+<div class="container">
 
-<button class="login" onclick="login()">Entrar</button>
+<!-- FORM -->
+<div class="card">
+<h3>Enviar Feedback</h3>
 
-<button class="cad" onclick="window.location.href='cadastro.html'">
-Cadastrar Usuário
-</button>
+<input id="nome" placeholder="Nome">
+<input id="setor" placeholder="Setor">
+<textarea id="feedback" placeholder="Escreva o feedback..."></textarea>
+<input id="nota" type="number" min="1" max="5" placeholder="Nota (1-5)">
+
+<button class="action" onclick="adicionar()">Salvar</button>
+</div>
+
+<!-- LISTA -->
+<div class="card">
+<h3>Feedbacks</h3>
+<div id="lista"></div>
+</div>
+
+<!-- GRAFICO -->
+<div class="card" id="graficoContainer"></div>
 
 </div>
+
+<script>
+const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/feedbacks";
+
+let user = JSON.parse(localStorage.getItem("user"));
+if(!user) location.href="login.html";
+
+let isAdmin = user.role === "admin";
+
+/* 👤 USUÁRIO COM ÍCONE */
+document.getElementById("user").innerHTML =
+`👤 ${user.nome} ${isAdmin ? " 👑 Admin" : ""}`;
+
+function logout(){
+localStorage.removeItem("user");
+location.href="login.html";
+}
+
+async function carregar(){
+
+let res = await fetch(API);
+let dados = await res.json();
+
+let lista = document.getElementById("lista");
+lista.innerHTML = "";
+
+let notas = [0,0,0,0,0];
+
+dados.forEach(item=>{
+
+notas[item.nota-1]++;
+
+let btn = "";
+
+if(isAdmin){
+btn = `<button onclick="excluir('${item.id}')">Excluir</button>`;
+}
+
+lista.innerHTML += `
+<div class="feed">
+<b>${item.nome}</b> • ${item.setor}<br>
+⭐ ${item.nota}<br>
+${item.feedback}<br>
+${btn}
 </div>
+`;
+});
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+if(isAdmin){
+document.getElementById("graficoContainer").innerHTML =
+`<canvas id="grafico"></canvas>`;
 
-const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID"
-};
+new Chart(document.getElementById("grafico"), {
+type:"bar",
+data:{
+labels:["1","2","3","4","5"],
+datasets:[{data:notas}]
+}
+});
+}
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+}
 
-window.login = async function(){
+async function adicionar(){
 
-  let email = document.getElementById("email").value;
-  let senha = document.getElementById("senha").value;
+let nomeVal = document.getElementById("nome").value;
+let setorVal = document.getElementById("setor").value;
+let feedbackVal = document.getElementById("feedback").value;
+let notaVal = document.getElementById("nota").value;
 
-  try{
-    await signInWithEmailAndPassword(auth,email,senha);
-    localStorage.setItem("user", email);
-    window.location.href="home.html";
-  }catch(e){
-    alert("Erro no login");
-  }
-};
+await fetch(API,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+nome:nomeVal,
+setor:setorVal,
+feedback:feedbackVal,
+nota:notaVal
+})
+});
+
+carregar();
+
+document.getElementById("nome").value="";
+document.getElementById("setor").value="";
+document.getElementById("feedback").value="";
+document.getElementById("nota").value="";
+}
+
+async function excluir(id){
+await fetch(`${API}/${id}`,{method:"DELETE"});
+carregar();
+}
+
+carregar();
 </script>
 
 </body>

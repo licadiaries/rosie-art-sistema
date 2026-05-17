@@ -2,113 +2,252 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Rosie Art | Home</title>
+<title>Feedback | Rosie Art</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
 margin:0;
 font-family:Arial;
-background:#f4f6f8;
+background:linear-gradient(135deg,#fff0f5,#ffe4ec);
 }
 
-.header{
+/* BOTÃO SAIR FIXO */
+.logout{
+position:fixed;
+top:15px;
+right:15px;
 background:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
+color:#ff69b4;
+border:none;
+padding:6px 10px;
+border-radius:8px;
+font-size:12px;
+cursor:pointer;
+box-shadow:0 2px 8px rgba(0,0,0,0.15);
+transition:0.2s;
+z-index:1000;
 }
 
+.logout:hover{
+transform:scale(1.05);
+}
+
+/* HEADER */
+header{
+background:linear-gradient(90deg,#ff69b4,#ff85c1);
+color:white;
+padding:18px 25px;
+text-align:center;
+position:relative;
+}
+
+/* USER */
+.user{
+position:absolute;
+left:15px;
+top:15px;
+font-size:14px;
+}
+
+/* LAYOUT */
 .container{
-max-width:700px;
-margin:auto;
-padding:20px;
+width:90%;
+max-width:900px;
+margin:25px auto;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
 }
 
+/* CARD */
+.card{
+background:white;
+padding:20px;
+border-radius:18px;
+box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* FORM */
 input,textarea{
 width:100%;
-padding:10px;
-margin-top:8px;
-}
-
-button{
-width:100%;
-padding:10px;
+padding:12px;
 margin-top:10px;
-background:#111;
-color:white;
-border:none;
-border-radius:8px;
+border-radius:10px;
+border:1px solid #eee;
+outline:none;
+font-size:14px;
 }
 
-.logout{
-background:transparent;
+textarea{
+resize:none;
+height:80px;
+}
+
+/* BOTÃO */
+button.action{
+margin-top:12px;
+width:100%;
+padding:12px;
 border:none;
-font-size:18px;
+border-radius:10px;
+background:linear-gradient(90deg,#ff69b4,#ff85c1);
+color:white;
 cursor:pointer;
+font-weight:bold;
+}
+
+/* FEEDBACK */
+.feed{
+background:#fff0f5;
+padding:12px;
+border-radius:12px;
+margin-top:10px;
+font-size:14px;
+}
+
+/* GRAFICO */
+#graficoContainer{
+grid-column:span 2;
+}
+
+@media(max-width:768px){
+.container{
+grid-template-columns:1fr;
+}
+#graficoContainer{
+grid-column:1;
+}
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-<div>
-<b>Rosie Art</b><br>
-<small id="user"></small>
-</div>
+<!-- BOTÃO SAIR -->
+<button class="logout" onclick="logout()">Sair</button>
 
-<button class="logout" onclick="logout()">⎋</button>
-</div>
+<header>
+<div class="user" id="user"></div>
+<h2>Rosie Art Feedback</h2>
+</header>
 
 <div class="container">
 
+<!-- FORM -->
+<div class="card">
 <h3>Enviar Feedback</h3>
 
 <input id="nome" placeholder="Nome">
 <input id="setor" placeholder="Setor">
-<textarea id="feedback"></textarea>
-<input id="nota" type="number">
+<textarea id="feedback" placeholder="Escreva o feedback..."></textarea>
+<input id="nota" type="number" min="1" max="5" placeholder="Nota (1-5)">
 
-<button onclick="enviar()">Enviar</button>
+<button class="action" onclick="adicionar()">Salvar</button>
+</div>
+
+<!-- LISTA -->
+<div class="card">
+<h3>Feedbacks</h3>
+<div id="lista"></div>
+</div>
+
+<!-- GRAFICO -->
+<div class="card" id="graficoContainer"></div>
 
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<script>
+const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/feedbacks";
 
-const firebaseConfig = {
-  apiKey:"SUA_API_KEY",
-  authDomain:"SEU_AUTH_DOMAIN",
-  projectId:"SEU_PROJECT_ID"
-};
+let user = JSON.parse(localStorage.getItem("user"));
+if(!user) location.href="login.html";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+let isAdmin = user.role === "admin";
 
-document.getElementById("user").innerText = localStorage.getItem("user");
+/* 👤 USUÁRIO */
+document.getElementById("user").innerHTML =
+`👤 ${user.nome} ${isAdmin ? " 👑 Admin" : ""}`;
 
-window.logout = async ()=>{
-await signOut(auth);
-window.location.href="index.html";
-};
+function logout(){
+localStorage.removeItem("user");
+location.href="login.html";
+}
 
-window.enviar = async ()=>{
+async function carregar(){
 
-await addDoc(collection(db,"feedbacks"),{
-nome: nome.value,
-setor: setor.value,
-feedback: feedback.value,
-nota: nota.value,
-usuario: localStorage.getItem("user")
+let res = await fetch(API);
+let dados = await res.json();
+
+let lista = document.getElementById("lista");
+lista.innerHTML = "";
+
+let notas = [0,0,0,0,0];
+
+dados.forEach(item=>{
+
+notas[item.nota-1]++;
+
+let btn = "";
+
+if(isAdmin){
+btn = `<button onclick="excluir('${item.id}')">Excluir</button>`;
+}
+
+lista.innerHTML += `
+<div class="feed">
+<b>${item.nome}</b> • ${item.setor}<br>
+⭐ ${item.nota}<br>
+${item.feedback}<br>
+${btn}
+</div>
+`;
 });
 
-alert("Feedback enviado!");
-};
+if(isAdmin){
+document.getElementById("graficoContainer").innerHTML =
+`<canvas id="grafico"></canvas>`;
 
+new Chart(document.getElementById("grafico"), {
+type:"bar",
+data:{
+labels:["1","2","3","4","5"],
+datasets:[{data:notas}]
+}
+});
+}
+
+}
+
+async function adicionar(){
+
+let nomeVal = document.getElementById("nome").value;
+let setorVal = document.getElementById("setor").value;
+let feedbackVal = document.getElementById("feedback").value;
+let notaVal = document.getElementById("nota").value;
+
+await fetch(API,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+nome:nomeVal,
+setor:setorVal,
+feedback:feedbackVal,
+nota:notaVal
+})
+});
+
+/* 🔥 REDIRECIONA PRA PÁGINA DE SUCESSO */
+window.location.href = "sucesso.html";
+}
+
+async function excluir(id){
+await fetch(`${API}/${id}`,{method:"DELETE"});
+carregar();
+}
+
+carregar();
 </script>
 
 </body>

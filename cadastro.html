@@ -5,36 +5,36 @@
 <title>Cadastro</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-background:#f4f6f8;
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg, #ffe4ec, #ffd6e0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-.box{
-background:white;
-padding:25px;
-border-radius:12px;
-width:340px;
+.box {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 300px;
 }
 
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
+input {
+  width: 95%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
 }
 
-button{
-width:100%;
-padding:12px;
-background:#111;
-color:white;
-border:none;
-border-radius:8px;
+button {
+  width: 100%;
+  padding: 10px;
+  background: #ff69b4;
+  color: white;
+  border: none;
+  border-radius: 8px;
 }
 </style>
 </head>
@@ -42,45 +42,47 @@ border-radius:8px;
 <body>
 
 <div class="box">
+  <h2>Cadastrar</h2>
 
-<h3>Cadastrar Usuário</h3>
+  <input type="text" id="nome" placeholder="Nome">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="senha" placeholder="Senha">
 
-<input id="nome" placeholder="Nome">
-<input id="email" placeholder="Email">
-<input id="senha" type="password" placeholder="Senha">
-
-<button onclick="cadastro()">Cadastrar</button>
-
+  <button onclick="cadastrar()">Cadastrar</button>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<script>
+const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/usuarios";
 
-const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-window.cadastro = async function(){
-
+async function cadastrar() {
   let nome = document.getElementById("nome").value;
   let email = document.getElementById("email").value;
   let senha = document.getElementById("senha").value;
 
-  try{
-    await createUserWithEmailAndPassword(auth,email,senha);
-    localStorage.setItem("user", nome);
-    alert("Usuário criado!");
-    window.location.href="index.html";
-  }catch(e){
-    alert("Erro ao cadastrar");
+  let res = await fetch(API);
+  let usuarios = await res.json();
+
+  let existe = usuarios.find(u => u.email === email);
+
+  if(existe){
+    alert("Email já existe!");
+    return;
   }
-};
+
+  await fetch(API, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      nome,
+      email,
+      senha,
+      role: "user"
+    })
+  });
+
+  alert("Cadastrado!");
+  window.location.href = "login.html";
+}
 </script>
 
 </body>
