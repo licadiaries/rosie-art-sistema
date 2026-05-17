@@ -2,250 +2,101 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Feedback | Rosie Art</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Login | Rosie Art</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#fff0f5,#ffe4ec);
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg, #ffe4ec, #ffd6e0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
 }
 
-/* BOTÃO SAIR FIXO */
-.logout{
-position:fixed;
-top:15px;
-right:15px;
-background:white;
-color:#ff69b4;
-border:none;
-padding:6px 10px;
-border-radius:8px;
-font-size:12px;
-cursor:pointer;
-box-shadow:0 2px 8px rgba(0,0,0,0.15);
-transition:0.2s;
-z-index:1000;
+.box {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 320px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  text-align: center;
 }
 
-.logout:hover{
-transform:scale(1.05);
+h2 {
+  color: #ff69b4;
+  margin-bottom: 20px;
 }
 
-/* IMAGEM CORPORATIVA */
-.banner{
-width:100%;
-height:180px;
-object-fit:cover;
-border-radius:0 0 20px 20px;
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  outline: none;
 }
 
-/* HEADER */
-header{
-background:linear-gradient(90deg,#ff69b4,#ff85c1);
-color:white;
-padding:18px 25px;
-text-align:center;
-position:relative;
+button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  margin-top: 10px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
-/* USUÁRIO */
-.user{
-position:absolute;
-left:15px;
-top:15px;
-font-size:14px;
-opacity:0.95;
+.login {
+  background: linear-gradient(90deg,#ff69b4,#ff85c1);
+  color: white;
 }
 
-/* LAYOUT */
-.container{
-width:90%;
-max-width:900px;
-margin:25px auto;
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-}
-
-/* CARD */
-.card{
-background:white;
-padding:20px;
-border-radius:18px;
-box-shadow:0 8px 20px rgba(0,0,0,0.08);
-}
-
-/* FORM */
-input,textarea{
-width:100%;
-padding:12px;
-margin-top:10px;
-border-radius:10px;
-border:1px solid #eee;
-outline:none;
-font-size:14px;
-}
-
-textarea{
-resize:none;
-height:80px;
-}
-
-/* BOTÃO */
-button.action{
-margin-top:12px;
-width:100%;
-padding:12px;
-border:none;
-border-radius:10px;
-background:linear-gradient(90deg,#ff69b4,#ff85c1);
-color:white;
-cursor:pointer;
-font-weight:bold;
-}
-
-/* FEEDBACK */
-.feed{
-background:#fff0f5;
-padding:12px;
-border-radius:12px;
-margin-top:10px;
-font-size:14px;
-}
-
-/* GRAFICO */
-#graficoContainer{
-grid-column:span 2;
-}
-
-@media(max-width:768px){
-.container{
-grid-template-columns:1fr;
-}
-#graficoContainer{
-grid-column:1;
-}
+.cadastro {
+  background: #ffe4ec;
+  color: #ff69b4;
 }
 </style>
 </head>
 
 <body>
 
-<button class="logout" onclick="logout()">Sair</button>
+<div class="box">
 
-<header>
-<div class="user" id="user"></div>
-<h2>Rosie Art Feedback</h2>
-</header>
+<h2>Rosie Art 💖</h2>
 
-<div class="container">
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="senha" placeholder="Senha">
 
-<div class="card">
-<h3>Enviar Feedback</h3>
-
-<input id="nome" placeholder="Nome">
-<input id="setor" placeholder="Setor">
-<textarea id="feedback" placeholder="Escreva o feedback..."></textarea>
-<input id="nota" type="number" min="1" max="5" placeholder="Nota (1-5)">
-
-<button class="action" onclick="adicionar()">Salvar</button>
-</div>
-
-<div class="card">
-<h3>Feedbacks</h3>
-<div id="lista"></div>
-</div>
-
-<div class="card" id="graficoContainer"></div>
+<button class="login" onclick="login()">Entrar</button>
+<button class="cadastro" onclick="window.location.href='cadastro.html'">
+Cadastrar
+</button>
 
 </div>
 
 <script>
-const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/feedbacks";
+const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/usuarios";
 
-let user = JSON.parse(localStorage.getItem("user"));
-if(!user) location.href="login.html";
+async function login(){
 
-let isAdmin = user.role === "admin";
+let email = document.getElementById("email").value;
+let senha = document.getElementById("senha").value;
 
-document.getElementById("user").innerHTML =
-`👤 ${user.nome} ${isAdmin ? " 👑 Admin" : ""}`;
-
-function logout(){
-localStorage.removeItem("user");
-location.href="login.html";
-}
-
-async function carregar(){
 let res = await fetch(API);
-let dados = await res.json();
+let usuarios = await res.json();
 
-let lista = document.getElementById("lista");
-lista.innerHTML="";
+let user = usuarios.find(u => u.email === email && u.senha === senha);
 
-let notas=[0,0,0,0,0];
-
-dados.forEach(item=>{
-notas[item.nota-1]++;
-
-let btn="";
-if(isAdmin){
-btn=`<button onclick="excluir('${item.id}')">Excluir</button>`;
+if(user){
+localStorage.setItem("user", JSON.stringify(user));
+window.location.href = "home.html";
+} else {
+alert("Email ou senha inválidos");
 }
 
-lista.innerHTML+=`
-<div class="feed">
-<b>${item.nome}</b> • ${item.setor}<br>
-⭐ ${item.nota}<br>
-${item.feedback}<br>
-${btn}
-</div>`;
-});
-
-if(isAdmin){
-document.getElementById("graficoContainer").innerHTML=
-`<canvas id="grafico"></canvas>`;
-
-new Chart(document.getElementById("grafico"), {
-type:"bar",
-data:{
-labels:["1","2","3","4","5"],
-datasets:[{data:notas}]
 }
-});
-}
-}
-
-async function adicionar(){
-
-let nomeVal = document.getElementById("nome").value;
-let setorVal = document.getElementById("setor").value;
-let feedbackVal = document.getElementById("feedback").value;
-let notaVal = document.getElementById("nota").value;
-
-await fetch(API,{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-nome:nomeVal,
-setor:setorVal,
-feedback:feedbackVal,
-nota:notaVal
-})
-});
-
-window.location.href="sucesso.html";
-}
-
-async function excluir(id){
-await fetch(`${API}/${id}`,{method:"DELETE"});
-carregar();
-}
-
-carregar();
 </script>
 
 </body>
