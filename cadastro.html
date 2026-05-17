@@ -5,10 +5,37 @@
 <title>Cadastro</title>
 
 <style>
-body{margin:0;font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh;background:#f4f6f8}
-.box{background:white;padding:25px;border-radius:12px;width:340px}
-input{width:100%;padding:12px;margin:8px 0}
-button{width:100%;padding:12px;background:#111;color:white;border:none;border-radius:8px}
+body{
+margin:0;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+background:#f4f6f8;
+}
+
+.box{
+background:white;
+padding:25px;
+border-radius:12px;
+width:340px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#111;
+color:white;
+border:none;
+border-radius:8px;
+}
 </style>
 </head>
 
@@ -27,10 +54,8 @@ button{width:100%;padding:12px;background:#111;color:white;border:none;border-ra
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "SUA_API_KEY",
@@ -40,7 +65,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 
 window.cadastro = async function(){
 
@@ -49,25 +73,14 @@ window.cadastro = async function(){
   let senha = document.getElementById("senha").value;
 
   try{
-
-    // cria usuário no Auth
-    const userCredential = await createUserWithEmailAndPassword(auth,email,senha);
-
-    // salva no Firestore
-    await setDoc(doc(db,"usuarios",userCredential.user.uid),{
-      nome: nome,
-      email: email
-    });
-
-    alert("Usuário criado com sucesso!");
-    window.location.href="/index.html";
-
+    await createUserWithEmailAndPassword(auth,email,senha);
+    localStorage.setItem("user", nome);
+    alert("Usuário criado!");
+    window.location.href="index.html";
   }catch(e){
-    console.log(e);
-    alert("Erro ao cadastrar: " + e.message);
+    alert("Erro ao cadastrar");
   }
 };
-
 </script>
 
 </body>

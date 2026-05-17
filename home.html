@@ -2,16 +2,51 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Rosie Art</title>
+<title>Rosie Art | Home</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f6f8}
-.header{background:white;padding:15px;display:flex;justify-content:space-between;align-items:center}
-.container{max-width:700px;margin:auto;padding:20px}
-.card{background:white;padding:15px;margin-top:10px;border-radius:10px}
-input,textarea{width:100%;padding:10px;margin-top:8px}
-button{width:100%;padding:10px;background:#111;color:white;border:none;margin-top:10px}
-.logout{background:transparent;border:none;font-size:18px;cursor:pointer}
+body{
+margin:0;
+font-family:Arial;
+background:#f4f6f8;
+}
+
+.header{
+background:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.container{
+max-width:700px;
+margin:auto;
+padding:20px;
+}
+
+input,textarea{
+width:100%;
+padding:10px;
+margin-top:8px;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:10px;
+background:#111;
+color:white;
+border:none;
+border-radius:8px;
+}
+
+.logout{
+background:transparent;
+border:none;
+font-size:18px;
+cursor:pointer;
+}
 </style>
 </head>
 
@@ -37,14 +72,11 @@ button{width:100%;padding:10px;background:#111;color:white;border:none;margin-to
 
 <button onclick="enviar()">Enviar</button>
 
-<div id="lista"></div>
-
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
@@ -61,12 +93,10 @@ document.getElementById("user").innerText = localStorage.getItem("user");
 
 window.logout = async ()=>{
 await signOut(auth);
-window.location.href="/index.html";
+window.location.href="index.html";
 };
 
 window.enviar = async ()=>{
-
-try{
 
 await addDoc(collection(db,"feedbacks"),{
 nome: nome.value,
@@ -76,30 +106,8 @@ nota: nota.value,
 usuario: localStorage.getItem("user")
 });
 
-window.location.href="/sucesso.html";
-
-}catch(e){
-alert(e.message);
-}
-
+alert("Feedback enviado!");
 };
-
-async function carregar(){
-let lista=document.getElementById("lista");
-
-const dados=await getDocs(collection(db,"feedbacks"));
-
-dados.forEach(d=>{
-lista.innerHTML+=`
-<div class="card">
-<b>${d.data().nome}</b><br>
-${d.data().feedback}<br>
-⭐ ${d.data().nota}
-</div>`;
-});
-}
-
-carregar();
 
 </script>
 

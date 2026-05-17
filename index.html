@@ -2,16 +2,64 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Login | Rosie Art</title>
+<title>Rosie Art | Login</title>
 
 <style>
-body{margin:0;font-family:Arial;display:flex;height:100vh}
-.left{flex:1;background:url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") center/cover}
-.right{flex:1;display:flex;justify-content:center;align-items:center;background:#f4f6f8}
-.box{width:340px;background:white;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.15)}
-input{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
-button{width:100%;padding:12px;border:none;border-radius:8px;cursor:pointer}
-.login{background:#111;color:white}
+body{
+margin:0;
+font-family:Arial;
+display:flex;
+height:100vh;
+}
+
+.left{
+flex:1;
+background:url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") center/cover;
+}
+
+.right{
+flex:1;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#f4f6f8;
+}
+
+.box{
+width:340px;
+background:white;
+padding:30px;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-top:8px;
+}
+
+.login{
+background:#111;
+color:white;
+}
+
+.cad{
+background:white;
+border:1px solid #111;
+color:#111;
+}
 </style>
 </head>
 
@@ -29,11 +77,14 @@ button{width:100%;padding:12px;border:none;border-radius:8px;cursor:pointer}
 
 <button class="login" onclick="login()">Entrar</button>
 
+<button class="cad" onclick="window.location.href='cadastro.html'">
+Cadastrar Usuário
+</button>
+
 </div>
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -53,17 +104,12 @@ window.login = async function(){
 
   try{
     await signInWithEmailAndPassword(auth,email,senha);
-
     localStorage.setItem("user", email);
-
-    window.location.href="/home.html";
-
+    window.location.href="home.html";
   }catch(e){
-    alert("Login ou senha inválidos");
-    console.log(e);
+    alert("Erro no login");
   }
 };
-
 </script>
 
 </body>
