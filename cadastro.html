@@ -2,85 +2,80 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Cadastro</title>
+<title>Login</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-background:#f4f6f8;
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg, #ffe4ec, #ffd6e0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-.box{
-background:white;
-padding:25px;
-border-radius:12px;
-width:340px;
+.box {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 300px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
+input {
+  width: 95%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
-button{
-width:100%;
-padding:12px;
-background:#111;
-color:white;
-border:none;
-border-radius:8px;
+button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  margin-top: 10px;
 }
+
+.login { background: #ff69b4; color: white; }
+.cadastro { background: #ffb6c1; }
 </style>
 </head>
 
 <body>
 
 <div class="box">
+  <h2>Login</h2>
 
-<h3>Cadastrar Usuário</h3>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="senha" placeholder="Senha">
 
-<input id="nome" placeholder="Nome">
-<input id="email" placeholder="Email">
-<input id="senha" type="password" placeholder="Senha">
-
-<button onclick="cadastro()">Cadastrar</button>
-
+  <button class="login" onclick="login()">Entrar</button>
+  <button class="cadastro" onclick="window.location.href='cadastro.html'">
+    Cadastrar Usuário
+  </button>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<script>
+const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/usuarios";
 
-const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-window.cadastro = async function(){
-
-  let nome = document.getElementById("nome").value;
+async function login() {
   let email = document.getElementById("email").value;
   let senha = document.getElementById("senha").value;
 
-  try{
-    await createUserWithEmailAndPassword(auth,email,senha);
-    localStorage.setItem("user", nome);
-    alert("Usuário criado!");
-    window.location.href="index.html";
-  }catch(e){
-    alert("Erro ao cadastrar");
+  let res = await fetch(API);
+  let usuarios = await res.json();
+
+  let user = usuarios.find(u => u.email === email && u.senha === senha);
+
+  if(user){
+    localStorage.setItem("user", JSON.stringify(user));
+    window.location.href = "index.html";
+  } else {
+    alert("Login inválido!");
   }
-};
+}
 </script>
 
 </body>
