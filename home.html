@@ -2,11 +2,16 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<<<<<<< HEAD
 <title>Feedback | Rosie Art</title>
+=======
+<title>Feedback</title>
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+<<<<<<< HEAD
 body{
 margin:0;
 font-family:Arial;
@@ -119,12 +124,60 @@ grid-template-columns:1fr;
 #graficoContainer{
 grid-column:1;
 }
+=======
+body {
+  font-family: Arial;
+  margin: 0;
+  background: linear-gradient(135deg, #fff0f5, #ffe4ec);
+}
+
+header {
+  background: linear-gradient(90deg, #ff69b4, #ff85c1);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.user {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+}
+
+.logout {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  background: white;
+  color: #ff69b4;
+  border-radius: 10px;
+  padding: 6px;
+  border: none;
+}
+
+.container {
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.card {
+  background: #ffe4ec;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 }
 </style>
 </head>
 
 <body>
 
+<<<<<<< HEAD
 <!-- BOTÃO SAIR -->
 <button class="logout" onclick="logout()">Sair</button>
 
@@ -245,6 +298,102 @@ window.location.href = "sucesso.html";
 async function excluir(id){
 await fetch(`${API}/${id}`,{method:"DELETE"});
 carregar();
+=======
+<header>
+  <div class="user" id="user"></div>
+  <h1>Feedback</h1>
+  <button class="logout" onclick="logout()">Sair</button>
+</header>
+
+<div class="container">
+  <input id="nome" placeholder="Nome">
+  <input id="setor" placeholder="Setor">
+  <textarea id="feedback"></textarea>
+  <input id="nota" type="number">
+  <button onclick="adicionar()">Salvar</button>
+</div>
+
+<div class="container">
+  <div id="lista"></div>
+</div>
+
+<div class="container" id="graficoContainer"></div>
+
+<script>
+const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/feedbacks";
+
+let user = JSON.parse(localStorage.getItem("user"));
+if(!user) location.href="login.html";
+
+let isAdmin = user.role === "admin";
+
+document.getElementById("user").innerText =
+  user.nome + (isAdmin ? " 👑" : "");
+
+function logout(){
+  localStorage.removeItem("user");
+  location.href="login.html";
+}
+
+async function carregar(){
+  let res = await fetch(API);
+  let dados = await res.json();
+
+  let lista = document.getElementById("lista");
+  lista.innerHTML="";
+
+  let notas=[0,0,0,0,0];
+
+  dados.forEach(item=>{
+    let btn="";
+    if(isAdmin){
+      btn=`<button onclick="excluir('${item.id}')">Excluir</button>`;
+    }
+
+    notas[item.nota-1]++;
+
+    lista.innerHTML+=`
+      <div class="card">
+        ${item.nome} (${item.setor})<br>
+        ⭐ ${item.nota}<br>
+        ${item.feedback}<br>
+        ${btn}
+      </div>`;
+  });
+
+  if(isAdmin){
+    document.getElementById("graficoContainer").innerHTML=
+      `<canvas id="grafico"></canvas>`;
+
+    new Chart(document.getElementById("grafico"), {
+      type:"bar",
+      data:{
+        labels:["1","2","3","4","5"],
+        datasets:[{data:notas}]
+      }
+    });
+  }
+}
+
+async function adicionar(){
+  let nome=nome.value;
+  let setor=setor.value;
+  let feedbackTxt=feedback.value;
+  let nota=nota.value;
+
+  await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({nome,setor,feedback:feedbackTxt,nota})
+  });
+
+  carregar();
+}
+
+async function excluir(id){
+  await fetch(`${API}/${id}`,{method:"DELETE"});
+  carregar();
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 }
 
 carregar();

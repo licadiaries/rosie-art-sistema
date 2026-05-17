@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Cadastro</title>
+<title>Login</title>
 
 <style>
 body {
@@ -19,6 +19,10 @@ body {
   padding: 30px;
   border-radius: 20px;
   width: 300px;
+<<<<<<< HEAD
+=======
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 }
 
 input {
@@ -26,22 +30,36 @@ input {
   padding: 10px;
   margin: 10px 0;
   border-radius: 8px;
+<<<<<<< HEAD
+=======
+  border: 1px solid #ccc;
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 }
 
 button {
   width: 100%;
   padding: 10px;
+<<<<<<< HEAD
   background: #ff69b4;
   color: white;
   border: none;
   border-radius: 8px;
+=======
+  border-radius: 8px;
+  border: none;
+  margin-top: 10px;
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 }
+
+.login { background: #ff69b4; color: white; }
+.cadastro { background: #ffb6c1; }
 </style>
 </head>
 
 <body>
 
 <div class="box">
+<<<<<<< HEAD
   <h2>Cadastrar</h2>
 
   <input type="text" id="nome" placeholder="Nome">
@@ -49,19 +67,35 @@ button {
   <input type="password" id="senha" placeholder="Senha">
 
   <button onclick="cadastrar()">Cadastrar</button>
+=======
+  <h2>Login</h2>
+
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="senha" placeholder="Senha">
+
+  <button class="login" onclick="login()">Entrar</button>
+  <button class="cadastro" onclick="window.location.href='cadastro.html'">
+    Cadastrar Usuário
+  </button>
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 </div>
 
 <script>
 const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/usuarios";
 
+<<<<<<< HEAD
 async function cadastrar() {
   let nome = document.getElementById("nome").value;
+=======
+async function login() {
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
   let email = document.getElementById("email").value;
   let senha = document.getElementById("senha").value;
 
   let res = await fetch(API);
   let usuarios = await res.json();
 
+<<<<<<< HEAD
   let existe = usuarios.find(u => u.email === email);
 
   if(existe){
@@ -82,6 +116,16 @@ async function cadastrar() {
 
   alert("Cadastrado!");
   window.location.href = "login.html";
+=======
+  let user = usuarios.find(u => u.email === email && u.senha === senha);
+
+  if(user){
+    localStorage.setItem("user", JSON.stringify(user));
+    window.location.href = "index.html";
+  } else {
+    alert("Login inválido!");
+  }
+>>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 }
 </script>
 
