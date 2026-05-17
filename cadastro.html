@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<title>Cadastro | Rosie Art</title>
 
 <style>
 body {
@@ -12,120 +12,106 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  margin: 0;
 }
 
 .box {
   background: white;
   padding: 30px;
   border-radius: 20px;
-  width: 300px;
-<<<<<<< HEAD
-=======
+  width: 320px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
->>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
+  text-align: center;
+}
+
+h2 {
+  color: #ff69b4;
+  margin-bottom: 20px;
 }
 
 input {
-  width: 95%;
+  width: 100%;
   padding: 10px;
-  margin: 10px 0;
+  margin: 8px 0;
   border-radius: 8px;
-<<<<<<< HEAD
-=======
-  border: 1px solid #ccc;
->>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
+  border: 1px solid #ddd;
+  outline: none;
 }
 
 button {
   width: 100%;
   padding: 10px;
-<<<<<<< HEAD
-  background: #ff69b4;
-  color: white;
-  border: none;
-  border-radius: 8px;
-=======
   border-radius: 8px;
   border: none;
   margin-top: 10px;
->>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
+  cursor: pointer;
+  font-weight: bold;
 }
 
-.login { background: #ff69b4; color: white; }
-.cadastro { background: #ffb6c1; }
+.cadastro {
+  background: linear-gradient(90deg,#ff69b4,#ff85c1);
+  color: white;
+}
+
+.voltar {
+  background: #ffe4ec;
+  color: #ff69b4;
+}
 </style>
 </head>
 
 <body>
 
 <div class="box">
-<<<<<<< HEAD
-  <h2>Cadastrar</h2>
 
-  <input type="text" id="nome" placeholder="Nome">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="senha" placeholder="Senha">
+<h2>Cadastro 👤</h2>
 
-  <button onclick="cadastrar()">Cadastrar</button>
-=======
-  <h2>Login</h2>
+<input type="text" id="nome" placeholder="Nome">
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="senha" placeholder="Senha">
 
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="senha" placeholder="Senha">
+<button class="cadastro" onclick="cadastrar()">Criar conta</button>
+<button class="voltar" onclick="window.location.href='login.html'">Voltar</button>
 
-  <button class="login" onclick="login()">Entrar</button>
-  <button class="cadastro" onclick="window.location.href='cadastro.html'">
-    Cadastrar Usuário
-  </button>
->>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
 </div>
 
 <script>
 const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/usuarios";
 
-<<<<<<< HEAD
 async function cadastrar() {
-  let nome = document.getElementById("nome").value;
-=======
-async function login() {
->>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
-  let email = document.getElementById("email").value;
-  let senha = document.getElementById("senha").value;
 
-  let res = await fetch(API);
-  let usuarios = await res.json();
+let nome = document.getElementById("nome").value;
+let email = document.getElementById("email").value;
+let senha = document.getElementById("senha").value;
 
-<<<<<<< HEAD
-  let existe = usuarios.find(u => u.email === email);
+if(!nome || !email || !senha){
+alert("Preenche tudo!");
+return;
+}
 
-  if(existe){
-    alert("Email já existe!");
-    return;
-  }
+let res = await fetch(API);
+let usuarios = await res.json();
 
-  await fetch(API, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      nome,
-      email,
-      senha,
-      role: "user"
-    })
-  });
+let existe = usuarios.find(u => u.email === email);
 
-  alert("Cadastrado!");
-  window.location.href = "login.html";
-=======
-  let user = usuarios.find(u => u.email === email && u.senha === senha);
+if(existe){
+alert("Esse email já existe!");
+return;
+}
 
-  if(user){
-    localStorage.setItem("user", JSON.stringify(user));
-    window.location.href = "index.html";
-  } else {
-    alert("Login inválido!");
-  }
->>>>>>> 5e0b90966e9bd35c51a74e1c76709cccde17dc2f
+await fetch(API,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+nome,
+email,
+senha,
+role:"user"
+})
+});
+
+alert("Conta criada com sucesso 💖");
+window.location.href="login.html";
 }
 </script>
 
