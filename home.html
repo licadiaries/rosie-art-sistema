@@ -2,80 +2,159 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<title>Feedback</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
   font-family: Arial;
-  background: linear-gradient(135deg, #ffe4ec, #ffd6e0);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, #fff0f5, #ffe4ec);
 }
 
-.box {
+header {
+  background: linear-gradient(90deg, #ff69b4, #ff85c1);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.user {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+}
+
+.logout {
+  position: absolute;
+  right: 20px;
+  top: 20px;
   background: white;
-  padding: 30px;
-  border-radius: 20px;
-  width: 300px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  color: #ff69b4;
+  border-radius: 10px;
+  padding: 6px;
+  border: none;
 }
 
-input {
-  width: 95%;
+.container {
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.card {
+  background: #ffe4ec;
   padding: 10px;
   margin: 10px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  border-radius: 10px;
 }
-
-button {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  margin-top: 10px;
-}
-
-.login { background: #ff69b4; color: white; }
-.cadastro { background: #ffb6c1; }
 </style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>Login</h2>
+<header>
+  <div class="user" id="user"></div>
+  <h1>Feedback</h1>
+  <button class="logout" onclick="logout()">Sair</button>
+</header>
 
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="senha" placeholder="Senha">
-
-  <button class="login" onclick="login()">Entrar</button>
-  <button class="cadastro" onclick="window.location.href='cadastro.html'">
-    Cadastrar Usuário
-  </button>
+<div class="container">
+  <input id="nome" placeholder="Nome">
+  <input id="setor" placeholder="Setor">
+  <textarea id="feedback"></textarea>
+  <input id="nota" type="number">
+  <button onclick="adicionar()">Salvar</button>
 </div>
 
+<div class="container">
+  <div id="lista"></div>
+</div>
+
+<div class="container" id="graficoContainer"></div>
+
 <script>
-const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/usuarios";
+const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/feedbacks";
 
-async function login() {
-  let email = document.getElementById("email").value;
-  let senha = document.getElementById("senha").value;
+let user = JSON.parse(localStorage.getItem("user"));
+if(!user) location.href="login.html";
 
+let isAdmin = user.role === "admin";
+
+document.getElementById("user").innerText =
+  user.nome + (isAdmin ? " 👑" : "");
+
+function logout(){
+  localStorage.removeItem("user");
+  location.href="login.html";
+}
+
+async function carregar(){
   let res = await fetch(API);
-  let usuarios = await res.json();
+  let dados = await res.json();
 
-  let user = usuarios.find(u => u.email === email && u.senha === senha);
+  let lista = document.getElementById("lista");
+  lista.innerHTML="";
 
-  if(user){
-    localStorage.setItem("user", JSON.stringify(user));
-    window.location.href = "index.html";
-  } else {
-    alert("Login inválido!");
+  let notas=[0,0,0,0,0];
+
+  dados.forEach(item=>{
+    let btn="";
+    if(isAdmin){
+      btn=`<button onclick="excluir('${item.id}')">Excluir</button>`;
+    }
+
+    notas[item.nota-1]++;
+
+    lista.innerHTML+=`
+      <div class="card">
+        ${item.nome} (${item.setor})<br>
+        ⭐ ${item.nota}<br>
+        ${item.feedback}<br>
+        ${btn}
+      </div>`;
+  });
+
+  if(isAdmin){
+    document.getElementById("graficoContainer").innerHTML=
+      `<canvas id="grafico"></canvas>`;
+
+    new Chart(document.getElementById("grafico"), {
+      type:"bar",
+      data:{
+        labels:["1","2","3","4","5"],
+        datasets:[{data:notas}]
+      }
+    });
   }
 }
+
+async function adicionar(){
+  let nome=nome.value;
+  let setor=setor.value;
+  let feedbackTxt=feedback.value;
+  let nota=nota.value;
+
+  await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({nome,setor,feedback:feedbackTxt,nota})
+  });
+
+  carregar();
+}
+
+async function excluir(id){
+  await fetch(`${API}/${id}`,{method:"DELETE"});
+  carregar();
+}
+
+carregar();
 </script>
 
 </body>
