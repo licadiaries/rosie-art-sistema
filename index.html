@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Login | Rosie Art</title>
+
+<style>
+body{margin:0;font-family:Arial;display:flex;height:100vh}
+.left{flex:1;background:url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") center/cover}
+.right{flex:1;display:flex;justify-content:center;align-items:center;background:#f4f6f8}
+.box{width:340px;background:white;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.15)}
+input{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+button{width:100%;padding:12px;border:none;border-radius:8px;cursor:pointer}
+.login{background:#111;color:white}
+</style>
+</head>
+
+<body>
+
+<div class="left"></div>
+
+<div class="right">
+<div class="box">
+
+<h2>Rosie Art</h2>
+
+<input id="email" placeholder="Email">
+<input id="senha" type="password" placeholder="Senha">
+
+<button class="login" onclick="login()">Entrar</button>
+
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_AUTH_DOMAIN",
+  projectId: "SEU_PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.login = async function(){
+
+  let email = document.getElementById("email").value;
+  let senha = document.getElementById("senha").value;
+
+  try{
+    await signInWithEmailAndPassword(auth,email,senha);
+
+    localStorage.setItem("user", email);
+
+    window.location.href="/home.html";
+
+  }catch(e){
+    alert("Login ou senha inválidos");
+    console.log(e);
+  }
+};
+
+</script>
+
+</body>
+</html>

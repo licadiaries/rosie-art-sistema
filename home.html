@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Rosie Art</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#f4f6f8}
+.header{background:white;padding:15px;display:flex;justify-content:space-between;align-items:center}
+.container{max-width:700px;margin:auto;padding:20px}
+.card{background:white;padding:15px;margin-top:10px;border-radius:10px}
+input,textarea{width:100%;padding:10px;margin-top:8px}
+button{width:100%;padding:10px;background:#111;color:white;border:none;margin-top:10px}
+.logout{background:transparent;border:none;font-size:18px;cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<div>
+<b>Rosie Art</b><br>
+<small id="user"></small>
+</div>
+
+<button class="logout" onclick="logout()">⎋</button>
+</div>
+
+<div class="container">
+
+<h3>Enviar Feedback</h3>
+
+<input id="nome" placeholder="Nome">
+<input id="setor" placeholder="Setor">
+<textarea id="feedback"></textarea>
+<input id="nota" type="number">
+
+<button onclick="enviar()">Enviar</button>
+
+<div id="lista"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey:"SUA_API_KEY",
+  authDomain:"SEU_AUTH_DOMAIN",
+  projectId:"SEU_PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+document.getElementById("user").innerText = localStorage.getItem("user");
+
+window.logout = async ()=>{
+await signOut(auth);
+window.location.href="/index.html";
+};
+
+window.enviar = async ()=>{
+
+try{
+
+await addDoc(collection(db,"feedbacks"),{
+nome: nome.value,
+setor: setor.value,
+feedback: feedback.value,
+nota: nota.value,
+usuario: localStorage.getItem("user")
+});
+
+window.location.href="/sucesso.html";
+
+}catch(e){
+alert(e.message);
+}
+
+};
+
+async function carregar(){
+let lista=document.getElementById("lista");
+
+const dados=await getDocs(collection(db,"feedbacks"));
+
+dados.forEach(d=>{
+lista.innerHTML+=`
+<div class="card">
+<b>${d.data().nome}</b><br>
+${d.data().feedback}<br>
+⭐ ${d.data().nota}
+</div>`;
+});
+}
+
+carregar();
+
+</script>
+
+</body>
+</html>
