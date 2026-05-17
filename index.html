@@ -2,114 +2,159 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Rosie Art | Login</title>
+<title>Feedback</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-display:flex;
-height:100vh;
+body {
+  font-family: Arial;
+  margin: 0;
+  background: linear-gradient(135deg, #fff0f5, #ffe4ec);
 }
 
-.left{
-flex:1;
-background:url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") center/cover;
+header {
+  background: linear-gradient(90deg, #ff69b4, #ff85c1);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: relative;
 }
 
-.right{
-flex:1;
-display:flex;
-justify-content:center;
-align-items:center;
-background:#f4f6f8;
+.user {
+  position: absolute;
+  left: 20px;
+  top: 20px;
 }
 
-.box{
-width:340px;
-background:white;
-padding:30px;
-border-radius:15px;
-box-shadow:0 10px 30px rgba(0,0,0,0.15);
+.logout {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  background: white;
+  color: #ff69b4;
+  border-radius: 10px;
+  padding: 6px;
+  border: none;
 }
 
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
-border-radius:8px;
-border:1px solid #ccc;
+.container {
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
 }
 
-button{
-width:100%;
-padding:12px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-margin-top:8px;
-}
-
-.login{
-background:#111;
-color:white;
-}
-
-.cad{
-background:white;
-border:1px solid #111;
-color:#111;
+.card {
+  background: #ffe4ec;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="left"></div>
+<header>
+  <div class="user" id="user"></div>
+  <h1>Feedback</h1>
+  <button class="logout" onclick="logout()">Sair</button>
+</header>
 
-<div class="right">
-<div class="box">
-
-<h2>Rosie Art</h2>
-
-<input id="email" placeholder="Email">
-<input id="senha" type="password" placeholder="Senha">
-
-<button class="login" onclick="login()">Entrar</button>
-
-<button class="cad" onclick="window.location.href='cadastro.html'">
-Cadastrar Usuário
-</button>
-
-</div>
+<div class="container">
+  <input id="nome" placeholder="Nome">
+  <input id="setor" placeholder="Setor">
+  <textarea id="feedback"></textarea>
+  <input id="nota" type="number">
+  <button onclick="adicionar()">Salvar</button>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<div class="container">
+  <div id="lista"></div>
+</div>
 
-const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID"
-};
+<div class="container" id="graficoContainer"></div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+<script>
+const API = "https://69bde36b17c3d7d97790bff0.mockapi.io/feedbacks";
 
-window.login = async function(){
+let user = JSON.parse(localStorage.getItem("user"));
+if(!user) location.href="login.html";
 
-  let email = document.getElementById("email").value;
-  let senha = document.getElementById("senha").value;
+let isAdmin = user.role === "admin";
 
-  try{
-    await signInWithEmailAndPassword(auth,email,senha);
-    localStorage.setItem("user", email);
-    window.location.href="home.html";
-  }catch(e){
-    alert("Erro no login");
+document.getElementById("user").innerText =
+  user.nome + (isAdmin ? " 👑" : "");
+
+function logout(){
+  localStorage.removeItem("user");
+  location.href="login.html";
+}
+
+async function carregar(){
+  let res = await fetch(API);
+  let dados = await res.json();
+
+  let lista = document.getElementById("lista");
+  lista.innerHTML="";
+
+  let notas=[0,0,0,0,0];
+
+  dados.forEach(item=>{
+    let btn="";
+    if(isAdmin){
+      btn=`<button onclick="excluir('${item.id}')">Excluir</button>`;
+    }
+
+    notas[item.nota-1]++;
+
+    lista.innerHTML+=`
+      <div class="card">
+        ${item.nome} (${item.setor})<br>
+        ⭐ ${item.nota}<br>
+        ${item.feedback}<br>
+        ${btn}
+      </div>`;
+  });
+
+  if(isAdmin){
+    document.getElementById("graficoContainer").innerHTML=
+      `<canvas id="grafico"></canvas>`;
+
+    new Chart(document.getElementById("grafico"), {
+      type:"bar",
+      data:{
+        labels:["1","2","3","4","5"],
+        datasets:[{data:notas}]
+      }
+    });
   }
-};
+}
+
+async function adicionar(){
+  let nome=nome.value;
+  let setor=setor.value;
+  let feedbackTxt=feedback.value;
+  let nota=nota.value;
+
+  await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({nome,setor,feedback:feedbackTxt,nota})
+  });
+
+  carregar();
+}
+
+async function excluir(id){
+  await fetch(`${API}/${id}`,{method:"DELETE"});
+  carregar();
+}
+
+carregar();
 </script>
 
 </body>
